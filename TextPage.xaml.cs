@@ -36,7 +36,7 @@ public partial class TextPage : ContentPage
             FontAttributes = FontAttributes.Italic,
         };
 
-        editor.TextChanged += Teksti_sisestamine; // Lisame sündmus TextChanged, mis käivitab funktsiooni Tekste_sisestamine
+        editor.TextChanged += Teksti_sisestamine; // Lisame sï¿½ndmus TextChanged, mis kï¿½ivitab funktsiooni Tekste_sisestamine
 
         hsl = new HorizontalStackLayout { };
         for (int i = 0; i < 3; i++)
@@ -77,6 +77,14 @@ public partial class TextPage : ContentPage
         else if (btn.ZIndex == 1)
         {
             await Navigation.PushAsync(new StartPage());
+        }
+        else if (btn.ZIndex == 2)
+        {
+            await Navigation.PushAsync(new Timer_Page());
+        }
+        else if (btn.ZIndex == 3)
+        {
+            await Navigation.PushAsync(new ValgusfoorPage());
         }
         else
         {

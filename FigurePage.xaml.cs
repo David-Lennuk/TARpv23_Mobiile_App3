@@ -7,7 +7,7 @@ public partial class FigurePage : ContentPage
     Random rnd = new Random();
     HorizontalStackLayout hsl;
     List<string> buttons = new List<string> { "Tagasi", "Avaleht", "Edasi" };
-    int click = 0; // ??????? ??????
+    int click = 0; 
 
     public FigurePage(int k)
     {
@@ -61,13 +61,12 @@ public partial class FigurePage : ContentPage
         Content = vsl;
     }
 
-    private async void Klik_boksi_peal(object? sender, TappedEventArgs e)
+    private void Klik_boksi_peal(object? sender, TappedEventArgs e)
     {
-        click++; // ??????????? ??????? ??????
-        lbl.Text = $"Klikid: {click}"; // ????????? ?????
+        click++; 
+        lbl.Text = $"Klikid: {click}"; 
 
         bw.Color = Color.FromRgb(rnd.Next(0, 255), rnd.Next(0, 255), rnd.Next(0, 255));
-        await bw.RotateTo(bw.Rotation + 60, 200); // ??????? ?? 45 ????????
 
         bw.WidthRequest += 20;
         bw.HeightRequest += 20;
@@ -76,15 +75,14 @@ public partial class FigurePage : ContentPage
         {
             bw.WidthRequest = 200;
             bw.HeightRequest = 200;
-            click = 0; // ?????????? ???????
+            click = 0; 
             lbl.Text = "Klikid: 0";
         }
     }
 
     private async void Liikumine(object? sender, EventArgs e)
     {
-        if (sender is not Button btn) return; 
-
+        Button btn = (Button)sender;
         if (btn.ZIndex == 0)
         {
             await Navigation.PushAsync(new TextPage(btn.ZIndex));
@@ -92,6 +90,14 @@ public partial class FigurePage : ContentPage
         else if (btn.ZIndex == 1)
         {
             await Navigation.PushAsync(new StartPage());
+        }
+        else if (btn.ZIndex == 2)
+        {
+            await Navigation.PushAsync(new Timer_Page());
+        }
+        else if (btn.ZIndex == 3)
+        {
+            await Navigation.PushAsync(new ValgusfoorPage());
         }
         else
         {

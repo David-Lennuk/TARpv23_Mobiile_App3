@@ -3,7 +3,7 @@ namespace TARpv23_Mobiile_App;
 public partial class StartPage : ContentPage
 {
     public List<ContentPage> lehed = new List<ContentPage>() { new TextPage(0), new FigurePage(1) };
-    public List<string> tekstid = new List<string> { "Tee lahti TekstPage", "Tee lahti FigurePage" };
+    public List<string> tekstid = new List<string> { "Tee lahti TekstPage", "Tee lahti FigurePage", "Tee lahti Timer_Page", "Tee lahti ValgusfoorPage" };
     ScrollView sv;
     VerticalStackLayout vsl;
     public StartPage()
