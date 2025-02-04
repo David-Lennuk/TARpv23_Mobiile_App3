@@ -1,173 +1,205 @@
-namespace TARpv23_Mobiile_App;
-
-public partial class ValgusfoorPage : ContentPage
+namespace TARpv23_Mobiile_App
 {
-    HorizontalStackLayout hsl;
-    List<string> buttons = new List<string> { "Tagasi", "Avaleht", "Edasi" };
-    private readonly Dictionary<string, Color> lightColors = new()
+    public partial class ValgusfoorPage : ContentPage
     {
-        { "Red", Colors.Red },
-        { "Yellow", Colors.Yellow },
-        { "Green", Colors.Green }
-    };
-
-    private bool isOn = false;
-    private List<BoxView> lights = new();
-    private Label statusLabel;
-
-    public ValgusfoorPage()
-    {
-        Title = "Valgusfoor";
-
-        statusLabel = new Label
+        private bool isOn = false;
+        private Label header;
+        private List<Frame> ring;
+        private readonly List<Color> aktiivsed = new List<Color> { Colors.Red, Colors.Yellow, Colors.Green };
+        private readonly List<string> vastused = new List<string> { "Peatu", "Oota", "Mine" };
+        private readonly Random rnd = new Random();
+        private int? RandomIndex = null;
+        public ValgusfoorPage()
         {
-            Text = "Светофор выключен",
-            FontSize = 24,
-            TextColor = Colors.Black,
-            HorizontalOptions = LayoutOptions.Center
-        };
-
-        hsl = new HorizontalStackLayout { };
-        for (int i = 0; i < 3; i++)
-        {
-            Button nupp = new Button
+            Title = "Valgusfoor";
+            header = new Label
             {
-                Text = buttons[i],
-                ZIndex = i,
-                WidthRequest = DeviceDisplay.Current.MainDisplayInfo.Width / 8.3,
+                Text = "Valgusfoor",
+                FontSize = 24,
+                HorizontalOptions = LayoutOptions.Center
             };
 
-            hsl.Add(nupp);
-            nupp.Clicked += Liikumine;
-        }
-        
-        // Контейнер для светофора
-        var trafficLightStack = new VerticalStackLayout { Spacing = 10 };
-
-        // Создаем круги светофора через цикл
-        foreach (var color in lightColors.Keys)
-        {
-            var light = new BoxView
+            // Liiklustulede ringide loomine
+            ring = new List<Frame>();
+            StackLayout lightsStack = new StackLayout
             {
-                WidthRequest = 100,
-                HeightRequest = 100,
-                CornerRadius = 50,
-                BackgroundColor = Colors.Gray
+                Spacing = 10,
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center
             };
 
-            var tapGesture = new TapGestureRecognizer();
-            tapGesture.Tapped += Light_Tapped;
-            light.GestureRecognizers.Add(tapGesture);
+            // Ringide loomine tsuklis
+            for (int i = 0; i < 3; i++)
+            {
+                var box = new BoxView
+                {
+                    Color = Colors.Gray, 
+                    HeightRequest = 100,
+                    WidthRequest = 100,
+                    CornerRadius = 50
+                };
 
-            lights.Add(light);
-            trafficLightStack.Children.Add(light);
+                var frame = new Frame
+                {
+                    Padding = 0,
+                    Content = box,
+                    HasShadow = false,
+                    BorderColor = Colors.Black,
+                    CornerRadius = 50,
+                    HeightRequest = 100,
+                    WidthRequest = 100,
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center,
+                };
+
+                // muudab p�ise vastavaks s�numiks
+                int index = i;
+                var tapGesture = new TapGestureRecognizer();
+                tapGesture.Tapped += (s, e) =>
+                {
+                    if (!isOn)
+                    {
+                        header.Text = "K�igepealt l�litage valgusfoorid sisse";
+                    }
+                    else
+                    {
+                        header.Text = vastused[index];
+                    }
+                };
+                frame.GestureRecognizers.Add(tapGesture);
+
+                lightsStack.Children.Add(frame);
+                ring.Add(frame);
+            }
+
+            // Liiklusvalgustusluliti
+            Button onButton = new Button 
+            { 
+                Text = "Sisse" 
+            };
+            onButton.Clicked += (s, e) => TurnOn();
+
+            // Liiklustulede valjalulitamise nupp
+            Button offButton = new Button { Text = "V�lja" };
+            offButton.Clicked += (s, e) => TurnOff();
+
+            // juhuslik varvivalik 
+            Button randomButton = new Button 
+            { 
+                Text = "Juhuslik valik" 
+            };
+            randomButton.Clicked += (s, e) => ActivateRandomLight();
+
+            StackLayout control = new StackLayout
+            {
+                Orientation = StackOrientation.Horizontal,
+                HorizontalOptions = LayoutOptions.Center,
+                Spacing = 20,
+                Children = { onButton, offButton, randomButton }
+            };
+
+            // Vastusevoimalustega nupud
+            Button btnPeatu = new Button 
+            { 
+                Text = "Peatu" 
+            };
+            btnPeatu.Clicked += (s, e) => CheckAnswer("Peatu");
+
+            Button btnOota = new Button 
+            { 
+                Text = "Oota" 
+            };
+            btnOota.Clicked += (s, e) => CheckAnswer("Oota");
+
+            Button btnMine = new Button 
+            { 
+                Text = "Mine" 
+            };
+            btnMine.Clicked += (s, e) => CheckAnswer("Mine");
+
+            StackLayout stackLayout = new StackLayout
+            {
+                Orientation = StackOrientation.Horizontal,
+                HorizontalOptions = LayoutOptions.Center,
+                Spacing = 20,
+                Children = { btnPeatu, btnOota, btnMine }
+            };
+
+            // Lehe peamine konteiner
+            Content = new StackLayout
+            {
+                Spacing = 20,
+                Padding = new Thickness(20),
+                VerticalOptions = LayoutOptions.Center,
+                Children = { header, lightsStack, control, stackLayout }
+            };
         }
 
-        // Кнопки управления
-        var sisseButton = new Button
+        // Liiklustulede sisselulitamise meetod 
+        private void TurnOn()
         {
-            Text = "Sisse",
-            FontSize = 18
-        };
-        sisseButton.Clicked += Sisse_Clicked;
-
-        var valjaButton = new Button
-        {
-            Text = "Välja",
-            FontSize = 18
-        };
-        valjaButton.Clicked += Välja_Clicked;
-
-        var buttonStack = new HorizontalStackLayout
-        {
-            Spacing = 20,
-            HorizontalOptions = LayoutOptions.Center,
-            Children = { sisseButton, valjaButton }
-        };
-
-        // Финальный интерфейс
-        Content = new VerticalStackLayout
-        {
-            Padding = 20,
-            Spacing = 15,
-            HorizontalOptions = LayoutOptions.Center,
-            Children = { statusLabel, trafficLightStack, buttonStack }
-        };
-    }
-
-    private void Sisse_Clicked(object sender, EventArgs e)
-    {
-        isOn = true;
-        statusLabel.Text = "Светофор включен";
-        UpdateLights();
-    }
-
-    private void Välja_Clicked(object sender, EventArgs e)
-    {
-        isOn = false;
-        statusLabel.Text = "Светофор выключен";
-        UpdateLights();
-    }
-
-    private void UpdateLights()
-    {
-        int i = 0;
-        foreach (var light in lights)
-        {
-            light.BackgroundColor = isOn ? lightColors.ElementAt(i).Value : Colors.Gray;
-            i++;
-        }
-    }
-
-    private void Light_Tapped(object sender, TappedEventArgs e)
-    {
-        if (!isOn)
-        {
-            statusLabel.Text = "Сначала включи светофор";
-            return;
+            isOn = true;
+            header.Text = "Valgusfoor on sisse l�litatud. Vali re�iim.";
+            RandomIndex = null;
+            for (int i = 0; i < ring.Count; i++)
+            {
+                var box = (BoxView)ring[i].Content;
+                box.Color = aktiivsed[i];
+            }
         }
 
-        var clickedLight = (BoxView)sender;
-        if (clickedLight.BackgroundColor == Colors.Red)
+        // Liiklustulede valjalulitamise meetod 
+        private void TurnOff()
         {
-            statusLabel.Text = "Стой!";
+            isOn = false;
+            header.Text = "L�lita esmalt valgusfoor sisse";
+            RandomIndex = null;
+            foreach (var frame in ring)
+            {
+                var box = (BoxView)frame.Content;
+                box.Color = Colors.Gray;
+            }
         }
-        else if (clickedLight.BackgroundColor == Colors.Yellow)
-        {
-            statusLabel.Text = "Жди!";
-        }
-        else if (clickedLight.BackgroundColor == Colors.Green)
-        {
-            statusLabel.Text = "Иди!";
-        }
-    }
-    private async void Liikumine(object? sender, EventArgs e)
-    {
-        Button btn = (Button)sender;
-        if (btn.ZIndex == 0)
-        {
-            await Navigation.PushAsync(new TextPage(btn.ZIndex));
-        }
-        else if (btn.ZIndex == 1)
-        {
-            await Navigation.PushAsync(new StartPage());
-        }
-        else if (btn.ZIndex == 2)
-        {
-            await Navigation.PushAsync(new Timer_Page());
-        }
-        else if (btn.ZIndex == 3)
-        {
-            await Navigation.PushAsync(new ValgusfoorPage());
-        }
-        else
-        {
-            await Navigation.PushAsync(new FigurePage(btn.ZIndex));
-        }
-    }
 
-    private async void Tagasi_Clicked(object sender, EventArgs e)
-    {
-        await Navigation.PushAsync(new MainPage());
+        // Juhuslik varvireziim 
+        private void ActivateRandomLight()
+        {
+            if (!isOn)
+            {
+                header.Text = "L�lita esmalt valgusfoor sisse";
+                return;
+            }
+
+            // Valime juhusliku indeksi vahemikus 0 kuni 2
+            int index = rnd.Next(0, 3);
+            RandomIndex = index;
+            header.Text = "Mis on �ige vastus?";
+
+            //valitud v�rv on aktiivne, teised on hallid
+            for (int i = 0; i < ring.Count; i++)
+            {
+                var box = (BoxView)ring[i].Content;
+                box.Color = (i == index) ? aktiivsed[i] : Colors.Gray;
+            }
+        }
+
+        // Valitud vastuse kontrollimine
+        private void CheckAnswer(string answer)
+        {
+            if (!isOn || RandomIndex == null)
+            {
+                header.Text = "L�lita esmalt valgusfoor sisse ja vali juhuslik re�iim";
+                return;
+            }
+            // Kui vastus on sama, mis oige vastus praegusele varvile
+            if (answer == vastused[RandomIndex.Value])
+            {
+                header.Text = "�ige!";
+            }
+            else
+            {
+                header.Text = "Vale!";
+            }
+        }
     }
 }

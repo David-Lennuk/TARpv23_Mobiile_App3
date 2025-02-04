@@ -20,8 +20,6 @@ public partial class TextPage : ContentPage
             VerticalTextAlignment = TextAlignment.Center,
             FontSize = 28,
         };
-
-        //??????? ?? ?????????
         TapGestureRecognizer tapGestureRecognizer = new TapGestureRecognizer();
         tapGestureRecognizer.Tapped += TapGestureRecognizer_Tapped;
         lbl.GestureRecognizers.Add(tapGestureRecognizer);
@@ -36,7 +34,7 @@ public partial class TextPage : ContentPage
             FontAttributes = FontAttributes.Italic,
         };
 
-        editor.TextChanged += Teksti_sisestamine; // Lisame s�ndmus TextChanged, mis k�ivitab funktsiooni Tekste_sisestamine
+        editor.TextChanged += Teksti_sisestamine; 
 
         hsl = new HorizontalStackLayout { };
         for (int i = 0; i < 3; i++)
@@ -62,7 +60,6 @@ public partial class TextPage : ContentPage
 
     private async void TapGestureRecognizer_Tapped(object? sender, TappedEventArgs e)
     {
-        //????????? ??? ??????? ????????? ?? 360 ????????
         await lbl.RelRotateTo(360, 500);
         lbl.TextColor = Color.FromRgb(rnd.Next(256), rnd.Next(256), rnd.Next(256)); // ???????? ???? ????????? ??? ?????? ???????
     }
@@ -95,8 +92,6 @@ public partial class TextPage : ContentPage
     private void Teksti_sisestamine(object? sender, TextChangedEventArgs e)
     {
         lbl.Text = editor.Text;
-
-        // ?????? ???? ????????? ? ??? ??? ?????
         lbl.TextColor = Color.FromRgb(rnd.Next(256), rnd.Next(256), rnd.Next(256));
         editor.BackgroundColor = Color.FromRgb(rnd.Next(256), rnd.Next(256), rnd.Next(256));
     }
