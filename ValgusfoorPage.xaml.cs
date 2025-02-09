@@ -3,12 +3,15 @@ namespace TARpv23_Mobiile_App
     public partial class ValgusfoorPage : ContentPage
     {
         private bool isOn = false;
+        private bool isAutoMode = false;
+        private bool isFlashing = false;
         private Label header;
         private List<Frame> ring;
         private readonly List<Color> aktiivsed = new List<Color> { Colors.Red, Colors.Yellow, Colors.Green };
         private readonly List<string> vastused = new List<string> { "Peatu", "Oota", "Mine" };
         private readonly Random rnd = new Random();
         private int? RandomIndex = null;
+
         public ValgusfoorPage()
         {
             Title = "Valgusfoor";
@@ -19,21 +22,19 @@ namespace TARpv23_Mobiile_App
                 HorizontalOptions = LayoutOptions.Center
             };
 
-            // Liiklustulede ringide loomine
             ring = new List<Frame>();
             StackLayout lightsStack = new StackLayout
             {
                 Spacing = 10,
                 HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center
+                VerticalOptions = LayoutOptions.Start
             };
 
-            // Ringide loomine tsuklis
             for (int i = 0; i < 3; i++)
             {
                 var box = new BoxView
                 {
-                    Color = Colors.Gray, 
+                    Color = Colors.Gray,
                     HeightRequest = 100,
                     WidthRequest = 100,
                     CornerRadius = 50
@@ -52,19 +53,15 @@ namespace TARpv23_Mobiile_App
                     VerticalOptions = LayoutOptions.Center,
                 };
 
-                // muudab päise vastavaks sõnumiks
                 int index = i;
                 var tapGesture = new TapGestureRecognizer();
                 tapGesture.Tapped += (s, e) =>
                 {
-                    if (!isOn)
-                    {
-                        header.Text = "Kõigepealt lülitage valgusfoorid sisse";
-                    }
-                    else
-                    {
-                        header.Text = vastused[index];
-                    }
+                    if (!isOn || isAutoMode || isFlashing)
+                        return;
+
+                    header.Text = vastused[index];
+                    AnimateFrame(frame);
                 };
                 frame.GestureRecognizers.Add(tapGesture);
 
@@ -72,52 +69,36 @@ namespace TARpv23_Mobiile_App
                 ring.Add(frame);
             }
 
-            // Liiklusvalgustusluliti
-            Button onButton = new Button 
-            { 
-                Text = "Sisse" 
-            };
+            Button onButton = new Button { Text = "Sisse" };
             onButton.Clicked += (s, e) => TurnOn();
 
-            // Liiklustulede valjalulitamise nupp
-            Button offButton = new Button { Text = "Välja" };
+            Button offButton = new Button { Text = "VÃ¤lja" };
             offButton.Clicked += (s, e) => TurnOff();
 
-            // juhuslik varvivalik 
-            Button randomButton = new Button 
-            { 
-                Text = "Juhuslik valik" 
-            };
+            Button randomButton = new Button { Text = "Juhuslik valik" };
             randomButton.Clicked += (s, e) => ActivateRandomLight();
+
+            Button autoModeButton = new Button { Text = "Automaatne reÅ¾iim" };
+            autoModeButton.Clicked += (s, e) => StartAutoMode();
 
             StackLayout control = new StackLayout
             {
                 Orientation = StackOrientation.Horizontal,
                 HorizontalOptions = LayoutOptions.Center,
                 Spacing = 20,
-                Children = { onButton, offButton, randomButton }
+                Children = { onButton, offButton }
             };
 
-            // Vastusevoimalustega nupud
-            Button btnPeatu = new Button 
-            { 
-                Text = "Peatu" 
-            };
+            Button btnPeatu = new Button { Text = "Peatu" };
             btnPeatu.Clicked += (s, e) => CheckAnswer("Peatu");
 
-            Button btnOota = new Button 
-            { 
-                Text = "Oota" 
-            };
+            Button btnOota = new Button { Text = "Oota" };
             btnOota.Clicked += (s, e) => CheckAnswer("Oota");
 
-            Button btnMine = new Button 
-            { 
-                Text = "Mine" 
-            };
+            Button btnMine = new Button { Text = "Mine" };
             btnMine.Clicked += (s, e) => CheckAnswer("Mine");
 
-            StackLayout stackLayout = new StackLayout
+            StackLayout answerButtons = new StackLayout
             {
                 Orientation = StackOrientation.Horizontal,
                 HorizontalOptions = LayoutOptions.Center,
@@ -125,21 +106,22 @@ namespace TARpv23_Mobiile_App
                 Children = { btnPeatu, btnOota, btnMine }
             };
 
-            // Lehe peamine konteiner
             Content = new StackLayout
             {
                 Spacing = 20,
                 Padding = new Thickness(20),
                 VerticalOptions = LayoutOptions.Center,
-                Children = { header, lightsStack, control, stackLayout }
+                Children = { header, lightsStack, control, autoModeButton, randomButton, answerButtons }
             };
         }
 
-        // Liiklustulede sisselulitamise meetod 
         private void TurnOn()
         {
+            if (isAutoMode || isFlashing)
+                return;
+
             isOn = true;
-            header.Text = "Valgusfoor on sisse lülitatud. Vali reþiim.";
+            header.Text = "Valgusfoor on sisse lÃ¼litatud. Vali reÅ¾iim.";
             RandomIndex = null;
             for (int i = 0; i < ring.Count; i++)
             {
@@ -148,11 +130,12 @@ namespace TARpv23_Mobiile_App
             }
         }
 
-        // Liiklustulede valjalulitamise meetod 
         private void TurnOff()
         {
             isOn = false;
-            header.Text = "Lülita esmalt valgusfoor sisse";
+            isAutoMode = false;
+            isFlashing = false;
+            header.Text = "LÃ¼lita esmalt valgusfoor sisse";
             RandomIndex = null;
             foreach (var frame in ring)
             {
@@ -161,21 +144,15 @@ namespace TARpv23_Mobiile_App
             }
         }
 
-        // Juhuslik varvireziim 
         private void ActivateRandomLight()
         {
-            if (!isOn)
-            {
-                header.Text = "Lülita esmalt valgusfoor sisse";
+            if (!isOn || isAutoMode || isFlashing)
                 return;
-            }
 
-            // Valime juhusliku indeksi vahemikus 0 kuni 2
             int index = rnd.Next(0, 3);
             RandomIndex = index;
-            header.Text = "Mis on õige vastus?";
+            header.Text = "Mis on Ãµige vastus?";
 
-            //valitud värv on aktiivne, teised on hallid
             for (int i = 0; i < ring.Count; i++)
             {
                 var box = (BoxView)ring[i].Content;
@@ -183,23 +160,65 @@ namespace TARpv23_Mobiile_App
             }
         }
 
-        // Valitud vastuse kontrollimine
+        private async void StartAutoMode()
+        {
+            if (!isOn)
+            {
+                header.Text = "LÃ¼litage esmalt valgusfoor pÃµlema!";
+                return;
+            }
+
+            isAutoMode = true;
+            isFlashing = true;
+            header.Text = "Auto Mode aktiivne!";
+
+            while (isAutoMode)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    ((BoxView)ring[i].Content).Color = Colors.Gray;
+                }
+
+                if (isFlashing)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        ((BoxView)ring[j].Content).Color = aktiivsed[j];
+                        await Task.Delay(500);
+                        ((BoxView)ring[j].Content).Color = Colors.Gray;
+                    }
+                }
+                else
+                {
+                    ((BoxView)ring[1].Content).Color = aktiivsed[1];
+                    await Task.Delay(500);
+                    ((BoxView)ring[1].Content).Color = Colors.Gray;
+                }
+
+                await Task.Delay(1000);
+            }
+
+            isFlashing = false;
+        }
+
         private void CheckAnswer(string answer)
         {
             if (!isOn || RandomIndex == null)
             {
-                header.Text = "Lülita esmalt valgusfoor sisse ja vali juhuslik reþiim";
+                header.Text = "LÃ¼lita esmalt valgusfoor sisse ja vali juhuslik reÅ¾iim";
                 return;
             }
-            // Kui vastus on sama, mis oige vastus praegusele varvile
-            if (answer == vastused[RandomIndex.Value])
-            {
-                header.Text = "Õige!";
-            }
-            else
-            {
-                header.Text = "Vale!";
-            }
+
+            header.Text = answer == vastused[RandomIndex.Value] ? "Ã•ige!" : "Vale!";
+        }
+
+        private async void AnimateFrame(Frame frame)
+        {
+            await frame.ScaleTo(1.2, 100);
+            frame.BorderColor = Colors.White;
+            await Task.Delay(200);
+            await frame.ScaleTo(1.0, 100);
+            frame.BorderColor = Colors.Black;
         }
     }
 }
