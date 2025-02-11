@@ -105,7 +105,7 @@ namespace TARpv23_Mobiile_App
                 return;
 
             isOn = true;
-            header.Text = "Valgusfoor on sisse lülitatud. Vali režiim.";
+            header.Text = "Valgusfoor on sisse lülitatud. Vali režiim";
             RandomIndex = null;
             for (int i = 0; i < lights.Count; i++)
             {
