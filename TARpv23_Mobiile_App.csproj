@@ -57,7 +57,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Resources\Fonts\Luckymoon 400.ttf" />
+	  <None Remove="Resources\Fonts\Lothares 400.ttf" />
 	</ItemGroup>
 
 	<ItemGroup>

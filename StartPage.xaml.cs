@@ -9,17 +9,17 @@ public partial class StartPage : ContentPage
     public StartPage()
     {
         Title = "Avaleht";
-        vsl = new VerticalStackLayout { BackgroundColor = Color.FromArgb("#FFC0CB") };
+        vsl = new VerticalStackLayout { BackgroundColor = Color.FromArgb("#800080") };
         for (int i = 0; i < tekstid.Count; i++)
         {
             Button nupp = new Button
             {
                 Text = tekstid[i],
-                BackgroundColor = Color.FromArgb("#EE82EE"),
-                TextColor = Color.FromArgb("#FF00FF"),
+                BackgroundColor = Color.FromArgb("#8080ff"),
+                TextColor = Color.FromArgb(" #000000f"),
                 BorderWidth = 10,
                 ZIndex = i,
-                FontFamily = "Luckymoon 400",
+                FontFamily = "Lothares 400",
                 FontSize = 30
             };
             vsl.Add(nupp);

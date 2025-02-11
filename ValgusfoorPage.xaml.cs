@@ -6,7 +6,7 @@ namespace TARpv23_Mobiile_App
         private bool isAutoMode = false;
         private bool isFlashing = false;
         private Label header;
-        private List<Frame> ring;
+        private List<StackLayout> lights;  // List of StackLayouts to hold square lights
         private readonly List<Color> aktiivsed = new List<Color> { Colors.Red, Colors.Yellow, Colors.Green };
         private readonly List<string> vastused = new List<string> { "Peatu", "Oota", "Mine" };
         private readonly Random rnd = new Random();
@@ -22,7 +22,7 @@ namespace TARpv23_Mobiile_App
                 HorizontalOptions = LayoutOptions.Center
             };
 
-            ring = new List<Frame>();
+            lights = new List<StackLayout>();
             StackLayout lightsStack = new StackLayout
             {
                 Spacing = 10,
@@ -32,25 +32,18 @@ namespace TARpv23_Mobiile_App
 
             for (int i = 0; i < 3; i++)
             {
-                var box = new BoxView
+                var lightSquare = new BoxView
                 {
                     Color = Colors.Gray,
                     HeightRequest = 100,
                     WidthRequest = 100,
-                    CornerRadius = 50
                 };
 
-                var frame = new Frame
+                var lightContainer = new StackLayout
                 {
-                    Padding = 0,
-                    Content = box,
-                    HasShadow = false,
-                    BorderColor = Colors.Black,
-                    CornerRadius = 50,
-                    HeightRequest = 100,
-                    WidthRequest = 100,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
+                    Children = { lightSquare }
                 };
 
                 int index = i;
@@ -61,12 +54,12 @@ namespace TARpv23_Mobiile_App
                         return;
 
                     header.Text = vastused[index];
-                    AnimateFrame(frame);
+                    AnimateLight(lightContainer);
                 };
-                frame.GestureRecognizers.Add(tapGesture);
+                lightContainer.GestureRecognizers.Add(tapGesture);
 
-                lightsStack.Children.Add(frame);
-                ring.Add(frame);
+                lightsStack.Children.Add(lightContainer);
+                lights.Add(lightContainer);
             }
 
             Button onButton = new Button { Text = "Sisse" };
@@ -74,9 +67,6 @@ namespace TARpv23_Mobiile_App
 
             Button offButton = new Button { Text = "Välja" };
             offButton.Clicked += (s, e) => TurnOff();
-
-            Button randomButton = new Button { Text = "Juhuslik valik" };
-            randomButton.Clicked += (s, e) => ActivateRandomLight();
 
             Button autoModeButton = new Button { Text = "Automaatne režiim" };
             autoModeButton.Clicked += (s, e) => StartAutoMode();
@@ -89,14 +79,8 @@ namespace TARpv23_Mobiile_App
                 Children = { onButton, offButton }
             };
 
-            Button btnPeatu = new Button { Text = "Peatu" };
-            btnPeatu.Clicked += (s, e) => CheckAnswer("Peatu");
-
-            Button btnOota = new Button { Text = "Oota" };
-            btnOota.Clicked += (s, e) => CheckAnswer("Oota");
-
-            Button btnMine = new Button { Text = "Mine" };
-            btnMine.Clicked += (s, e) => CheckAnswer("Mine");
+            Button btnPeatu = new Button { Text = "Värvi määratlus" };
+            btnPeatu.Clicked += (s, e) => CheckAnswer("Värvi määratlus");
 
             StackLayout answerButtons = new StackLayout
             {
@@ -111,7 +95,7 @@ namespace TARpv23_Mobiile_App
                 Spacing = 20,
                 Padding = new Thickness(20),
                 VerticalOptions = LayoutOptions.Center,
-                Children = { header, lightsStack, control, autoModeButton, randomButton, answerButtons }
+                Children = { header, lightsStack, control, autoModeButton, answerButtons }
             };
         }
 
@@ -123,9 +107,9 @@ namespace TARpv23_Mobiile_App
             isOn = true;
             header.Text = "Valgusfoor on sisse lülitatud. Vali režiim.";
             RandomIndex = null;
-            for (int i = 0; i < ring.Count; i++)
+            for (int i = 0; i < lights.Count; i++)
             {
-                var box = (BoxView)ring[i].Content;
+                var box = (BoxView)lights[i].Children[0];
                 box.Color = aktiivsed[i];
             }
         }
@@ -137,9 +121,9 @@ namespace TARpv23_Mobiile_App
             isFlashing = false;
             header.Text = "Lülita esmalt valgusfoor sisse";
             RandomIndex = null;
-            foreach (var frame in ring)
+            foreach (var light in lights)
             {
-                var box = (BoxView)frame.Content;
+                var box = (BoxView)light.Children[0];
                 box.Color = Colors.Gray;
             }
         }
@@ -149,13 +133,15 @@ namespace TARpv23_Mobiile_App
             if (!isOn || isAutoMode || isFlashing)
                 return;
 
+            // Генерация случайного индекса
             int index = rnd.Next(0, 3);
             RandomIndex = index;
             header.Text = "Mis on õige vastus?";
 
-            for (int i = 0; i < ring.Count; i++)
+            // Очищаем все индикаторы
+            for (int i = 0; i < lights.Count; i++)
             {
-                var box = (BoxView)ring[i].Content;
+                var box = (BoxView)lights[i].Children[0];
                 box.Color = (i == index) ? aktiivsed[i] : Colors.Gray;
             }
         }
@@ -176,23 +162,23 @@ namespace TARpv23_Mobiile_App
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    ((BoxView)ring[i].Content).Color = Colors.Gray;
+                    ((BoxView)lights[i].Children[0]).Color = Colors.Gray;
                 }
 
                 if (isFlashing)
                 {
                     for (int j = 0; j < 3; j++)
                     {
-                        ((BoxView)ring[j].Content).Color = aktiivsed[j];
+                        ((BoxView)lights[j].Children[0]).Color = aktiivsed[j];
                         await Task.Delay(500);
-                        ((BoxView)ring[j].Content).Color = Colors.Gray;
+                        ((BoxView)lights[j].Children[0]).Color = Colors.Gray;
                     }
                 }
                 else
                 {
-                    ((BoxView)ring[1].Content).Color = aktiivsed[1];
+                    ((BoxView)lights[1].Children[0]).Color = aktiivsed[1];
                     await Task.Delay(500);
-                    ((BoxView)ring[1].Content).Color = Colors.Gray;
+                    ((BoxView)lights[1].Children[0]).Color = Colors.Gray;
                 }
 
                 await Task.Delay(1000);
@@ -209,16 +195,18 @@ namespace TARpv23_Mobiile_App
                 return;
             }
 
+            // Сравнение ответа с правильным
             header.Text = answer == vastused[RandomIndex.Value] ? "Õige!" : "Vale!";
         }
 
-        private async void AnimateFrame(Frame frame)
+        private async void AnimateLight(StackLayout lightContainer)
         {
-            await frame.ScaleTo(1.2, 100);
-            frame.BorderColor = Colors.White;
+            var box = (BoxView)lightContainer.Children[0];
+            await box.ScaleTo(1.2, 100);
+            lightContainer.BackgroundColor = Colors.White;
             await Task.Delay(200);
-            await frame.ScaleTo(1.0, 100);
-            frame.BorderColor = Colors.Black;
+            await box.ScaleTo(1.0, 100);
+            lightContainer.BackgroundColor = Colors.Transparent;
         }
     }
 }
