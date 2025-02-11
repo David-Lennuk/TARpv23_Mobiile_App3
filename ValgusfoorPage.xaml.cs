@@ -12,6 +12,9 @@ namespace TARpv23_Mobiile_App
         private readonly Random rnd = new Random();
         private int? RandomIndex = null;
 
+        // Цвета для светофора из будущего
+        private readonly List<Color> futureColors = new List<Color> { Colors.Purple, Colors.Cyan, Colors.Orange };
+
         public ValgusfoorPage()
         {
             Title = "Valgusfoor";
@@ -71,12 +74,16 @@ namespace TARpv23_Mobiile_App
             Button autoModeButton = new Button { Text = "Automaatne režiim" };
             autoModeButton.Clicked += (s, e) => StartAutoMode();
 
+            // Кнопка "Светофор из будущего"
+            Button futureButton = new Button { Text = "Svetofor from Future" };
+            futureButton.Clicked += (s, e) => ChangeToFutureColors();
+
             StackLayout control = new StackLayout
             {
                 Orientation = StackOrientation.Horizontal,
                 HorizontalOptions = LayoutOptions.Center,
                 Spacing = 20,
-                Children = { onButton, offButton }
+                Children = { onButton, offButton, futureButton }
             };
 
             Button btnPeatu = new Button { Text = "Värvi määratlus" };
@@ -87,7 +94,7 @@ namespace TARpv23_Mobiile_App
                 Orientation = StackOrientation.Horizontal,
                 HorizontalOptions = LayoutOptions.Center,
                 Spacing = 20,
-                Children = { btnPeatu, btnOota, btnMine }
+                Children = { btnPeatu }
             };
 
             Content = new StackLayout
@@ -133,12 +140,10 @@ namespace TARpv23_Mobiile_App
             if (!isOn || isAutoMode || isFlashing)
                 return;
 
-            // Генерация случайного индекса
             int index = rnd.Next(0, 3);
             RandomIndex = index;
             header.Text = "Mis on õige vastus?";
 
-            // Очищаем все индикаторы
             for (int i = 0; i < lights.Count; i++)
             {
                 var box = (BoxView)lights[i].Children[0];
@@ -195,7 +200,6 @@ namespace TARpv23_Mobiile_App
                 return;
             }
 
-            // Сравнение ответа с правильным
             header.Text = answer == vastused[RandomIndex.Value] ? "Õige!" : "Vale!";
         }
 
@@ -208,5 +212,20 @@ namespace TARpv23_Mobiile_App
             await box.ScaleTo(1.0, 100);
             lightContainer.BackgroundColor = Colors.Transparent;
         }
+
+        // Метод для изменения цветов на цвета из будущего
+        private void ChangeToFutureColors()
+        {
+            if (!isOn)
+                return;
+
+            header.Text = "valgusfoor tulevikust: Tulevikuvärvid!";
+            for (int i = 0; i < lights.Count; i++)
+            {
+                var box = (BoxView)lights[i].Children[0];
+                box.Color = futureColors[i];
+            }
+        }
     }
 }
+ 
