@@ -1,4 +1,4 @@
-namespace TARpv23_Mobiile_App;
+﻿namespace TARpv23_Mobiile_App;
 
 public partial class FigurePage : ContentPage
 {
@@ -7,7 +7,7 @@ public partial class FigurePage : ContentPage
     Random rnd = new Random();
     HorizontalStackLayout hsl;
     List<string> buttons = new List<string> { "Tagasi", "Avaleht", "Edasi" };
-    int click = 0; 
+    int click = 0;
 
     public FigurePage(int k)
     {
@@ -34,6 +34,7 @@ public partial class FigurePage : ContentPage
             BackgroundColor = Color.FromRgba(0, 0, 0, 0)
         };
 
+        // Анимация клика
         TapGestureRecognizer tap = new TapGestureRecognizer();
         tap.Tapped += Klik_boksi_peal;
         bw.GestureRecognizers.Add(tap);
@@ -61,21 +62,31 @@ public partial class FigurePage : ContentPage
         Content = vsl;
     }
 
-    private void Klik_boksi_peal(object? sender, TappedEventArgs e)
+    private async void Klik_boksi_peal(object? sender, TappedEventArgs e)
     {
-        click++; 
-        lbl.Text = $"Klikid: {click}"; 
+        click++;
+        lbl.Text = $"Klikid: {click}";
 
+        //анимации для роста и сжатия
+        var scaleAnimation = bw.ScaleTo(1.2, 100);
+        await scaleAnimation;
+
+        //цвет на случайный
         bw.Color = Color.FromRgb(rnd.Next(0, 255), rnd.Next(0, 255), rnd.Next(0, 255));
 
+        //эффекта пульсации
+        await bw.ScaleTo(1.0, 100); // Возвращаем в исходное состояние
+
+        // Увеличиваем размер с каждым кликом
         bw.WidthRequest += 20;
         bw.HeightRequest += 20;
 
+        // Когда размер слишком большой, сбрасываем его обратно и сбрасываем счетчик
         if (bw.WidthRequest > (int)DeviceDisplay.MainDisplayInfo.Width / 3)
         {
             bw.WidthRequest = 200;
             bw.HeightRequest = 200;
-            click = 0; 
+            click = 0;
             lbl.Text = "Klikid: 0";
         }
     }
